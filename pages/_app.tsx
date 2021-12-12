@@ -1,7 +1,9 @@
-import '../styles/globals.css'
-import type { AppProps } from 'next/app'
-import Head from 'next/head'
-import 'bulma/css/bulma.min.css'
+import '../styles/globals.css';
+import type { AppProps } from 'next/app';
+import Head from 'next/head';
+import 'bulma/css/bulma.min.css';
+import 'sweetalert2/dist/sweetalert2.min.css';
+
 function MyApp({ Component, pageProps }: AppProps) {
   return (
     <>

@@ -1,11 +1,12 @@
 import type { GetServerSideProps, GetServerSidePropsResult, NextPage } from 'next'
 import { useState, useMemo, useCallback, useEffect } from 'react';
-import DataTable, { TableColumn, TableRow } from 'react-data-table-component';
+import DataTable, { TableColumn } from 'react-data-table-component';
 import classNames from 'classnames';
 import axios from 'axios';
 import HttpStatusCode from '../models/http-status-codes.enum';
 import { CustomerDetails, NewCustomer } from '../models/customer.model';
-import { CustomerDetailsDto } from '../dto/customer-details.dto';
+import Swal from 'sweetalert2';
+import { motion } from 'framer-motion';
 
 enum ModalActions {
   'EDIT' = 'Edit Customer Details',
@@ -28,12 +29,41 @@ const Home: NextPage<Props> = ({ customerData }) => {
   const editModalClass = classNames('modal', {
     'is-active': displayModal
   })
-  useEffect(() => {
-    console.log("Retreived customer details")
-    console.log(typeof(customerData));
-    console.log(customerData)
+  const Toast = Swal.mixin({
+    toast: true,
+    position: 'top-end',
+    showConfirmButton: false,
+    timer: 4000,
+    timerProgressBar: true,
+    didOpen: (toast) => {
+      toast.addEventListener('mouseenter', Swal.stopTimer)
+      toast.addEventListener('mouseleave', Swal.resumeTimer)
+    }
+  })
 
-  }, [])
+  useEffect(() => {
+    if (newCustomer !== null && modalAction === ModalActions.ADD) {
+      axios.post<NewCustomer>(`${process.env.NEXT_PUBLIC_BASE_URL}/api/add-new-customer`, newCustomer)
+        .then((data) => {
+          return axios.get<CustomerDetails[]>(`${process.env.NEXT_PUBLIC_BASE_URL}/api/load-customers`)
+        })
+        .then((data) => setCustomerDetails(data.data))
+        .catch((err) => {
+          Toast.fire({
+            icon: 'error',
+            title: 'Ohh no. Something happened on our end :( try again in a few will ya?'
+          })
+          console.error(err);
+        })
+    }
+  }, [newCustomer])
+
+  useEffect(() => {
+    Toast.fire({
+      icon: 'success',
+      title: 'Customer data loaded successfully!'
+    })
+  }, [customerDetails])
   const columns: TableColumn<CustomerDetails>[] = [
     {
       name: 'ID',
@@ -67,7 +97,6 @@ const Home: NextPage<Props> = ({ customerData }) => {
   const headerActions = useMemo(() => {
 
     function handleAddCustomerClick() {
-      // setToggleSelectedRow(prevState => !prevState);
       setModalAction(ModalActions.ADD);
       setDisplayModal(true);
     }
@@ -121,7 +150,20 @@ const Home: NextPage<Props> = ({ customerData }) => {
         })
         break;
       case ModalActions.EDIT:
-
+        const { data, status } = await axios.post<CustomerDetails>(`${process.env.NEXT_PUBLIC_BASE_URL}/api/update-customer-details`, selectedRow);
+        if (status == HttpStatusCode.OK) {
+          Toast.fire({
+            icon: 'success',
+            title: 'Customer updated successfully!'
+          })
+          const { data, status } = await axios.get<CustomerDetails[]>(`${process.env.NEXT_PUBLIC_BASE_URL}/api/load-customers`);
+          setCustomerDetails(data);
+        } else {
+          Toast.fire({
+            icon: 'error',
+            title: 'Ohh no. Something happened on our end :( try again in a few will ya?'
+          })
+        }
         break;
 
       default:
@@ -133,7 +175,18 @@ const Home: NextPage<Props> = ({ customerData }) => {
   return (
     <section className="hero background-gradient is-fullheight">
       <div className="hero-body">
-        <div className="container is-flex is-justify-content-center is-align-items-center is-flex-direction-column">
+        <motion.div
+          className="container is-flex is-justify-content-center is-align-items-center is-flex-direction-column"
+          initial={{
+            opacity: 0
+          }}
+          animate={{
+            opacity: 1
+          }}
+          transition={{
+            duration: 0.5
+          }}
+        >
           <DataTable
             title='Customer Details'
             columns={columns}
@@ -147,7 +200,7 @@ const Home: NextPage<Props> = ({ customerData }) => {
             actions={headerActions}
             clearSelectedRows={toggleSelectedRow}
           />
-        </div>
+        </motion.div>
       </div>
 
       <div className={editModalClass}>
@@ -208,7 +261,7 @@ const Home: NextPage<Props> = ({ customerData }) => {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context): Promise<GetServerSidePropsResult<{ [key: string]: any; }>> => {
-  const { data, status } = await axios.get<CustomerDetails[]>(`${process.env.BASE_URL}/api/load-customers`);
+  const { data, status } = await axios.get<CustomerDetails[]>(`${process.env.NEXT_PUBLIC_BASE_URL}/api/load-customers`);
   if (status === HttpStatusCode.OK) {
     return {
       props: {
