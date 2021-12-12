@@ -97,7 +97,7 @@ const Home: NextPage = ({ customerData }) => {
 
   async function saveCustomerDetailChanges() {
 
-    // const { data, status } = await axios.get<CustomerDetailsDto>('http://localhost:3000/api/load-customers');
+    // const { data, status } = await axios.get<CustomerDetailsDto>('https://app-script-poc.vercel.app/api/load-customers');
     switch (modalAction) {
       case ModalActions.ADD:
         setNewCustomer({
@@ -193,7 +193,7 @@ const Home: NextPage = ({ customerData }) => {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context): Promise<GetServerSidePropsResult<{ [key: string]: any; }>> => {
-  const { data, status } = await axios.get<CustomerDetailsDto>('http://localhost:3000/api/load-customers');
+  const { data, status } = await axios.get<CustomerDetailsDto>('https://app-script-poc.vercel.app/api/load-customers');
   if (status === HttpStatusCode.OK) {
     return {
       props: {
