@@ -12,7 +12,11 @@ enum ModalActions {
   'ADD' = 'Add a new Customer'
 }
 
-const Home: NextPage = ({ customerData }) => {
+interface Props {
+  customerData: CustomerDetails[];
+}
+
+const Home: NextPage<Props> = ({ customerData }) => {
   const [selectedRow, setSelectedRow] = useState<CustomerDetails>()
   const [displayModal, setDisplayModal] = useState(false)
   const [modalAction, setModalAction] = useState(ModalActions.EDIT)
@@ -24,11 +28,12 @@ const Home: NextPage = ({ customerData }) => {
   const editModalClass = classNames('modal', {
     'is-active': displayModal
   })
-  // useEffect(() => {
-  //   console.log("Retreived customer details")
-  //   console.log(customerData);
+  useEffect(() => {
+    console.log("Retreived customer details")
+    console.log(typeof(customerData));
+    console.log(customerData)
 
-  // }, [])
+  }, [])
   const columns: TableColumn<CustomerDetails>[] = [
     {
       name: 'ID',
@@ -193,7 +198,7 @@ const Home: NextPage = ({ customerData }) => {
 }
 
 export const getServerSideProps: GetServerSideProps = async (context): Promise<GetServerSidePropsResult<{ [key: string]: any; }>> => {
-  const { data, status } = await axios.get<CustomerDetailsDto>('https://app-script-poc.vercel.app/api/load-customers');
+  const { data, status } = await axios.get<CustomerDetails[]>(`${process.env.BASE_URL}/api/load-customers`);
   if (status === HttpStatusCode.OK) {
     return {
       props: {
