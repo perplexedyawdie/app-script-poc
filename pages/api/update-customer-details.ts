@@ -11,7 +11,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     if (req.method == HTTPMethod.POST) {
         try {
             const customerSchema = yup.object({
-                id: yup.string().defined(),
+                id: yup.string().required(),
                 name: yup.string().nullable(),
                 email: yup.string().nullable().email()
             })

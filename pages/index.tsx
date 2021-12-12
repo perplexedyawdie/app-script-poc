@@ -82,13 +82,23 @@ const Home: NextPage<Props> = ({ customerData }) => {
 
   function handleNameInputChange({ target }: React.ChangeEvent<HTMLInputElement>) {
     setSelectedRow((prevState) => {
-      return { ...prevState, name: target.value }
+      const updatedDetails: CustomerDetails = {
+        id: prevState?.id || '',
+        email: prevState?.email || '',
+        name: target.value || ''
+      }
+      return updatedDetails
     })
   }
 
   function handleEmailInputChange({ target }: React.ChangeEvent<HTMLInputElement>) {
     setSelectedRow((prevState) => {
-      return { ...prevState, email: target.value }
+      const updatedDetails: CustomerDetails = {
+        id: prevState?.id || '',
+        email: target.value || '',
+        name: prevState?.name || ''
+      }
+      return updatedDetails
     })
   }
 
